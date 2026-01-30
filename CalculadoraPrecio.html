@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Precios de Venta</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background:#f4f6f8;
+      margin:0;
+      padding:16px;
+    }
+
+    .card {
+      background:#fff;
+      padding:16px;
+      border-radius:14px;
+      max-width:900px;
+      margin:auto;
+      box-shadow:0 8px 20px rgba(0,0,0,.1);
+    }
+
+    h1 {
+      text-align:center;
+      margin-bottom:16px;
+      font-size:22px;
+    }
+
+    .row {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .row input {
+      flex:1 1 100%;
+    }
+
+    input {
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      font-size:16px;
+      width:100%;
+    }
+
+    button {
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      background:#2563eb;
+      color:#fff;
+      font-size:16px;
+      cursor:pointer;
+      width:100%;
+    }
+
+    button.danger {
+      background:#dc2626;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:16px;
+      font-size:14px;
+    }
+
+    th, td {
+      padding:10px;
+      border-bottom:1px solid #e5e7eb;
+      text-align:left;
+    }
+
+    th {
+      background:#f1f5f9;
+      font-weight:600;
+    }
+
+    tfoot th {
+      font-weight:700;
+    }
+
+    /* Responsive tabla en celular */
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr { display:block; }
+      thead { display:none; }
+
+      tr {
+        margin-bottom:14px;
+        background:#f8fafc;
+        border-radius:12px;
+        padding:12px;
+      }
+
+      td {
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:6px 0;
+        border:none;
+        font-size:15px;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight:600;
+        color:#374151;
+      }
+
+      td:last-child {
+        margin-top:8px;
+      }
+
+      tfoot tr {
+        background:#e5e7eb;
+      }
+
+      tfoot th {
+        display:flex;
+        justify-content:space-between;
+        padding:6px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Calculadora de Precios de Venta by Pao</h1>
+
+    <div class="row">
+      <input id="nombre" placeholder="Nombre del producto" />
+      <input id="precio" type="number" placeholder="Costo (ARS)" />
+      <button onclick="agregarProducto()">Agregar</button>
+    </div>
+
+    <table id="tabla" style="display:none;">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Costo</th>
+          <th>Venta 35%</th>
+          <th>Venta 50%</th>
+          <th>Venta 100%</th>
+          <th>Total fila</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <th>TOTAL PRODUCTOS</th>
+          <th id="tCosto">$0.00</th>
+          <th colspan="4"></th>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div id="bloqueTotal" style="margin-top:16px; padding:16px; background:#111827; color:#fff; border-radius:14px; display:none;">
+      <h2 style="margin:0 0 12px 0; font-size:18px; text-align:center;">TOTAL A COBRAR</h2>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:16px;">
+        <div style="display:flex; justify-content:space-between;">
+          <span>35% de ganancia</span>
+          <strong id="b35">$0.00</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>50% de ganancia</span>
+          <strong id="b50">$0.00</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>100% de ganancia</span>
+          <strong id="b100">$0.00</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+function agregarProducto(){
+  const nombreInput = document.getElementById('nombre');
+  const precioInput = document.getElementById('precio');
+
+  const nombre = nombreInput.value.trim();
+  const costo = Number(precioInput.value);
+
+  if(nombre === '' || isNaN(costo) || costo <= 0){
+    alert('Ingresá un producto y un costo válido');
+    return;
+  }
+
+  const v35 = costo * 1.35;
+  const v50 = costo * 1.5;
+  const v100 = costo * 2;
+
+  const tbody = document.querySelector('#tabla tbody');
+
+  const fila = document.createElement('tr');
+  fila.innerHTML = `
+    <td data-label="Producto">${nombre}</td>
+    <td class="costo" data-label="Costo">$${costo.toFixed(2)}</td>
+    <td data-label="Venta 35%">$${v35.toFixed(2)}</td>
+    <td data-label="Venta 50%">$${v50.toFixed(2)}</td>
+    <td data-label="Venta 100%">$${v100.toFixed(2)}</td>
+    <td data-label="Acción">
+      <button class="danger" style="width:100%" onclick="eliminar(this)">Eliminar</button>
+    </td>
+  `;
+
+  tbody.appendChild(fila);
+  document.getElementById('tabla').style.display = 'table';
+
+  nombreInput.value = '';
+  precioInput.value = '';
+
+  recalcular();
+}
+
+function eliminar(btn){
+  btn.closest('tr').remove();
+  recalcular();
+}
+
+function recalcular(){
+  let costoTotal = 0;
+
+  document.querySelectorAll('.costo').forEach(td => {
+    costoTotal += Number(td.textContent.replace('$',''));
+  });
+
+  document.getElementById('tCosto').textContent = `$${costoTotal.toFixed(2)}`;
+
+  document.getElementById('b35').textContent = `$${(costoTotal * 1.35).toFixed(2)}`;
+  document.getElementById('b50').textContent = `$${(costoTotal * 1.5).toFixed(2)}`;
+  document.getElementById('b100').textContent = `$${(costoTotal * 2).toFixed(2)}`;
+
+  document.getElementById('bloqueTotal').style.display = costoTotal > 0 ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
+
